@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite as below."
+authors:
+    - family-names: Schutte
+    - given-names: Casper
+    - orcid: 0000-0003-4245-6842
+
+title: "Make a title"
+version: 1.0
+doi:
+date_released:
