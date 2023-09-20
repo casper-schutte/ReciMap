@@ -15,8 +15,11 @@ read_len = 200
 
 
 def get_border_reads():
-    # This function creates a list with various fields for the reads. The reads which do not map properly (indicated
-    # by the CIGAR string) are returned.
+    """
+    This function creates a list with various fields for the reads. The reads which do not map properly (indicated
+    by the CIGAR string) are returned.
+    :return:
+    """
     pos = []
     mapq = []
     chrom = []
@@ -32,7 +35,7 @@ def get_border_reads():
         rocigar.append(file.GetField(i, "CIGAR"))
     borders = []
     # Now the reads that had CIGAR strings that did not show full matches are appended to the "borders" list, along
-    # with its associated information.
+    # with their associated information.
     for read in enumerate(rocigar):
         if read[1] == f"{read_len}M" or read[1].count("S") == 0 or read[1].count("M") > 1:
             pass
@@ -91,6 +94,16 @@ def get_borders(borders):
 
 
 def refine_breakpoints(bp):
+    """
+    This function takes the breakpoints and groups them by whether they are within a certain distance from one another.
+    Then, the breakpoints that are within a certain distance from the non-confident breakpoints are added to the
+    group. The non-confident breakpoints are defined as those with a MAPQ score of less than 30. The distance threshold
+    is 10bp for the confident breakpoints and 5bp for the non-confident breakpoints. Output format:
+    [[chromosome, position, read_name, mapq, CIGAR string], ...]
+    :param bp:
+    :return: border_areas
+    """
+
     conf_borders = []
     non_conf_borders = []
     mapq_threshold = 30
@@ -135,63 +148,100 @@ def refine_breakpoints(bp):
 def write_to_file(breakpoints, duplicated_reads):
     """
     This function writes either the breakpoints or the connected borders to a file, depending on the mode (M or S).
-    If the mode is "S", the potential borders that had less than 5 reads supporting them are discarded.
+    If the mode is "S", the potential borders that had less than 5 reads supporting them are discarded. If the mode is
+    "M", the duplicated reads are written to the file. The format for the output is:
+    [chromosome, position, read_name, mapq, CIGAR string, orientation]
     :param breakpoints:
     :param duplicated_reads:
-    :return:
+    :return None:
     """
-    my_file = open(file_name, "w")
+    if mode not in ["M", "S"]:
+        print("Invalid mode. Please provide either 'M' or 'S'.")
+        return
+
+    try:
+        my_file = open(file_name, "w")
+    except IOError as e:
+        print(f"Error opening the file: {e}")
+        return
+
     if mode == "M":
         if duplicated_reads is not None:
-            for dup in duplicated_reads:
-                my_file.write(f"{dup[0]}\t{dup[1]}\n")
+            for dup in sorted(duplicated_reads):
+                my_file.write(f"{dup}\t{duplicated_reads.get(dup)}\n")
     elif mode == "S":
         breakpoints.sort(key=lambda x: x[0])
         for area in breakpoints:
+            area = [i for i in area if len(i) >= 6 and i[2].count("r") >= 2]
+            if len(area) <= 1:  # Ignore areas with less than two valid elements
+                continue
+
             area.sort(key=lambda x: x[3], reverse=True)
-            positions = []
-            for i in area:
-                positions.append(int(i[2].split("r")[1]) * 10)
-                # The * 10 in the line above is to account for the distance between the start of each consecutive read.
-                # This needs to change with the overlap and read length if these are changed.
+            positions = [int(i[2].split("r")[2]) for i in area]
+
+            if not positions:  # Skip if positions list is empty
+                continue
+
+            # Calculate the difference and threshold length
             diff = max(positions) - min(positions)
-            threshold_len = 1
-            # This is where the threshold can be set.
+            threshold_len = 1  # You can change this threshold to your desired value
+
             if len(area) > threshold_len:
                 my_file.write(f">{diff}")
                 my_file.write("\n")
                 for bp in area:
                     my_file.write(f"{bp[0]}\t{bp[1]}\t{bp[2]}\t{bp[3]}\t{bp[4]}\t{bp[5]}\n")
+
     my_file.close()
 
 
 def find_duplicate_reads(breakpoints):
+    """
+    This function finds the reads that map to more than one place. The reads are then grouped by whether they map to
+    the same place. The format for the output is:
+    TODO: update this
+    :param breakpoints:
+    :return: border_dict
+    """
+
     flat_borders = [border for x in breakpoints for border in x]
     read_names = [x[2] for x in flat_borders]
     duplicates = []
     for name in enumerate(read_names):
         if read_names.count(name[1]) > 1:
             duplicates.append(flat_borders[name[0]])
+            # flat_borders[name[0]] format: ['Chr3', 1401, 'rCh3r641', 255, '50M150S', '+']
     duplicates.sort(key=lambda x: x[2])
     # The sorcery below checks for reads mapping to more than one place
     grouped_borders = [list(x) for y, x in groupby(duplicates, lambda x: x[2])]
+    # grouped borders format example:
+    # [[['Chr1', 701, 'rCh1r1231', 255, '160S40M', '-'], ['Chr1', 1401, 'rCh1r1231', 38, '160M40S', '+']],
+    # [['Chr1', 701, 'rCh1r1241', 255, '150S50M', '-'], ['Chr1', 1401, 'rCh1r1241', 25, '150M50S', '+']],...]
     connected_borders = []
+    connected_reads = []
+
     for border in grouped_borders:
         if border[0][0] != border[1][0] or border[0][1] != border[1][1]:
+            # if either the positions or the chromosome names are different:
             connected_borders.append([border[0][0], border[0][1],
                                       border[1][0], border[1][1]])
-    my_set = [tuple(x) for x in connected_borders]
-    my_set = set(my_set)
-    my_list = []
-    for connection in my_set:
-        if connected_borders.count(list(connection)) > 4:
-            my_list.append([connected_borders.count(list(connection)),
-                            connection])
+            connected_reads.append([border[0][0], border[0][1], border[0][2], border[0][5],
+                                    border[1][0], border[1][1], border[1][2], border[1][5]])
+    border_dict = {}
+    for x in connected_borders:
+        if connected_borders.count(x) > 5:
+            temp_list = []
+            for y in connected_reads:
+                if [y[i] for i in [0, 1, 4, 5]] == x:
+                    temp_list.append(y)
+            # print(temp_list)
+            border_dict[(x[0], x[1], x[2], x[3])] = temp_list
+
 
     if not grouped_borders:
         return None
     else:
-        return my_list
+        return border_dict
 
 
 if __name__ == "__main__":
