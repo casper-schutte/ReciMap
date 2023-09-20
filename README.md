@@ -54,7 +54,7 @@ n - (chromosome name, start position of block, end position of block)
 Where "n" is the numerical label of the block, representing the original order of the blocks in the other genome.
 For example:
 ```
-Original order of blocks in genome syn_test2.fa
+Original order of blocks in genome reference_genome.fa
 1 - ('Chr2', 1, 210)
 2 - ('Chr2', 211, 14140)
 3 - ('Chr2', 14141, 14490)
@@ -69,7 +69,7 @@ Original order of blocks in genome syn_test2.fa
 12 - ('Chr5', 2241, 3361)
 13 - ('Chr5', 3361, 5172)
 
-Order of blocks in genome ref_test2.fa
+Order of blocks in genome rearranged_genome.fa
 n - ('Chr1', 701, 1400)
 n - ('Chr1', 1401, 14700)
 n - ('Chr2', 1, 210)
@@ -86,7 +86,11 @@ n - ('Chr2', 1, 210)
 13 - ('Chr5', 2241, 5172)
 ```
 The numerical labels of the blocks represent the order of the blocks in the OTHER genome. For example,
-the block labelled "12" is located between blocks 11 and 13 in the other genome.
+the block labelled "12" is located between blocks 9 and 10. This is due to a rearrangement event as in the reference 
+genome it was the 12th block, located between blocks 11 and 13. 
+
+The blocks labelled "n" are blocks whose synteny could not be established. This is often due to duplication events, 
+which do not leave a clear border.
 
 For more information on the rearrangement border, an 
 output file called "output.txt" will be left by the pipeline, giving more detail on each identified rearrangement border
