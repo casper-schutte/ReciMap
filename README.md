@@ -43,5 +43,33 @@ Please select the first genome (Genome A)
 The order in which the genomes are selected makes no difference. The borders will be in the form of 
 synteny blocks. The rearrangement borders are where one block ends and another begins. 
 This output will be written to a text file called blocks_(name_of_FASTA_file).txt. One of 
-these files will be created for each of the two genomes. For more information on the rearrangement border, an 
+these files will be created for each of the two genomes (see an example of the format under 
+the "Format Example" heading below):
+
+## Format Example:
+
+```
+n   (chromosome name, start position of block, end position of block)
+```
+For example:
+```
+n	('Chr1', 701, 1400)
+n	('Chr1', 1401, 14700)
+n	('Chr2', 1, 210)
+2	('Chr2', 211, 14490)
+5	('Chr3', 1, 700)
+4	('Chr3', 701, 1401)
+6	('Chr3', 1401, 5880)
+8	('Chr3', 5882, 7630)
+7	('Chr3', 7631, 8540)
+9	('Chr4', 1, 490)
+12	('Chr4', 493, 1608)
+10	('Chr4', 1611, 5600)
+11	('Chr5', 1, 2240)
+13	('Chr5', 2241, 5172)
+```
+The numerical labels of the blocks represent the order of the blocks in the OTHER genome. For example,
+the block labelled "12" is located between blocks 11 and 13 in the other genome.
+
+For more information on the rearrangement border, an 
 output file called "output.txt" will be left by the pipeline, giving more detail on each identified rearrangement border
