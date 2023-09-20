@@ -459,5 +459,10 @@ if __name__ == "__main__":
     #     print([num, block])
     # Save output to files in the form "blocks_{FASTA_NAME}.txt"
     with open(f"blocks_{sys.argv[1].split('.')[0]}.txt", "w") as final_file:
+        final_file.write(f"Original order of blocks in genome {sys.argv[4]}\n")
+        for x in genome2:
+            final_file.write(f"{x.num} - {x.block_info}\n")
+        final_file.write(f"\n")
+        final_file.write(f"Order of blocks in genome {sys.argv[1]}\n")
         for num, block in my_borders:
-            final_file.write(f"{num}\t{block}\n")
+            final_file.write(f"{num} - {block}\n")

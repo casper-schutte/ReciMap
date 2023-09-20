@@ -83,8 +83,8 @@ python3 analyse_borders.py
 rm *.bt2 # Remove temp files created by Bowtie2
 
 # Identify synteny blocks between the genomes.
-python3 get_synteny_blocks.py "$genomeA" B mAB.txt
-python3 get_synteny_blocks.py "$genomeB" A mBA.txt
+python3 get_synteny_blocks.py "$genomeA" B mAB.txt "$genomeB"
+python3 get_synteny_blocks.py "$genomeB" A mBA.txt "$genomeA"
 
 rm mAB.txt mBA.txt sAB.txt sBA.txt
 

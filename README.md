@@ -47,26 +47,43 @@ these files will be created for each of the two genomes (see an example of the f
 the "Format Example" heading below):
 
 ## Format Example:
-
+The format is as follows
 ```
-n   (chromosome name, start position of block, end position of block)
+n - (chromosome name, start position of block, end position of block)
 ```
+Where "n" is the numerical label of the block, representing the original order of the blocks in the other genome.
 For example:
 ```
-n	('Chr1', 701, 1400)
-n	('Chr1', 1401, 14700)
-n	('Chr2', 1, 210)
-2	('Chr2', 211, 14490)
-5	('Chr3', 1, 700)
-4	('Chr3', 701, 1401)
-6	('Chr3', 1401, 5880)
-8	('Chr3', 5882, 7630)
-7	('Chr3', 7631, 8540)
-9	('Chr4', 1, 490)
-12	('Chr4', 493, 1608)
-10	('Chr4', 1611, 5600)
-11	('Chr5', 1, 2240)
-13	('Chr5', 2241, 5172)
+Original order of blocks in genome syn_test2.fa
+1 - ('Chr2', 1, 210)
+2 - ('Chr2', 211, 14140)
+3 - ('Chr2', 14141, 14490)
+4 - ('Chr3', 1, 700)
+5 - ('Chr3', 701, 1401)
+6 - ('Chr3', 1401, 5880)
+7 - ('Chr3', 5882, 6790)
+8 - ('Chr3', 6791, 8540)
+9 - ('Chr4', 1, 487)
+10 - ('Chr4', 493, 5600)
+11 - ('Chr5', 1, 2240)
+12 - ('Chr5', 2241, 3361)
+13 - ('Chr5', 3361, 5172)
+
+Order of blocks in genome ref_test2.fa
+n - ('Chr1', 701, 1400)
+n - ('Chr1', 1401, 14700)
+n - ('Chr2', 1, 210)
+2 - ('Chr2', 211, 14490)
+5 - ('Chr3', 1, 700)
+4 - ('Chr3', 701, 1401)
+6 - ('Chr3', 1401, 5880)
+8 - ('Chr3', 5882, 7630)
+7 - ('Chr3', 7631, 8540)
+9 - ('Chr4', 1, 490)
+12 - ('Chr4', 493, 1608)
+10 - ('Chr4', 1611, 5600)
+11 - ('Chr5', 1, 2240)
+13 - ('Chr5', 2241, 5172)
 ```
 The numerical labels of the blocks represent the order of the blocks in the OTHER genome. For example,
 the block labelled "12" is located between blocks 11 and 13 in the other genome.
