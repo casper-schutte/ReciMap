@@ -5,6 +5,7 @@ import ast
 fasta_name = sys.argv[1]
 out_name = sys.argv[2]
 connected_border_file = sys.argv[3]
+other_genome = sys.argv[4]
 
 
 def get_chrom_info(filename):
@@ -35,10 +36,10 @@ def get_chrom_info(filename):
 
 
 chrom_lens = get_chrom_info(fasta_name)
-
+other_len = get_chrom_info(other_genome)
 
 # Define a function to find synteny blocks given the list of borders
-def get_synteny_blocks(border_file):
+def get_synteny_blocks(border_file, lens):
     """
     This function creates the synteny blocks from the borders. It does this by first creating the chromosomes as blocks
     and then adding the borders to the appropriate chromosomes. The function also extracts the read information from
@@ -64,14 +65,14 @@ def get_synteny_blocks(border_file):
             # This appends the chromosome name, border position, and read name to the borders list as a tuple.
         chromosomes = []
         chromosomes_with_borders = []
-        for chrom in chrom_lens:
+        for chrom in lens:
             for chrom_name in borders:
                 if chrom == chrom_name[1]:
                     chromosomes_with_borders.append(chrom)
                     # If there reported borders in a chromosome, append the chromosome to the appropriate list.
-        for chrom in chrom_lens:
+        for chrom in lens:
             chromosomes.append((
-                chrom, 1, chrom_lens.get(chrom), f"r0"
+                chrom, 1, lens.get(chrom), f"r0"
             ))
             # Create the full chromosomes as blocks, if there are no borders found then it gets appended as a block.
         # t is the list of temporary blocks
@@ -187,17 +188,20 @@ def get_synteny_blocks(border_file):
                 # Then append the last block that goes from the end of the last border and the end of the chromosome.
                 rb.append(
                     (
-                        t[x][y][0], curr_pos, chrom_lens.get(t[x][y][0]), bwr.get(t[x][y + 1])
+                        t[x][y][0], curr_pos, lens.get(t[x][y][0]), bwr.get(t[x][y + 1])
+                        # Suspect this is where a mistake is creeping in wrt to chromosome lengths.
                     )
                 )
 
             for block in rb:
+                # print(block)
                 if block[2] <= block[1]:
                     pass
                     # Skip "blocks" that have the same start and end position, as these are not blocks.
                 else:
                     syn_blocks.append(block)
 
+        # print(syn_blocks)
         return syn_blocks
 
 
@@ -268,7 +272,10 @@ def correlate_blocks(genome):
     prev_key = None
     all_keys = set()
 
-    for sublist in gen_a[1:]:
+    # This looks complicated, but I am just extracting fields I care about. This is semi vestigial because I used
+    # to write a lot of the output to temp files just to have to parse the files, so I cut out the middle man and
+    # this is the result.
+    for sublist in gen_a[0:]:
         key = tuple(sublist[:3])
         sublist_4th = sublist[3]
         all_keys.add(key)
@@ -302,7 +309,8 @@ def correlate_blocks(genome):
         my_blocks.append(block)
         counter += 1
 
-
+    # for x in my_blocks:
+    #     print(x.num, x.block_info, x.read_info, x.block_range)
     return my_blocks, block_dict
 
 
@@ -377,19 +385,26 @@ if __name__ == "__main__":
     syntenyA = []
     syntenyB = []
 
-    for line in get_synteny_blocks("genA.txt"):
+    for line in get_synteny_blocks(f"genA.txt", chrom_lens):
         syntenyA.append([line[0], line[1], line[2], line[3]])
-    for line in get_synteny_blocks("genB.txt"):
+    for line in get_synteny_blocks("genB.txt", other_len):
         syntenyB.append([line[0], line[1], line[2], line[3]])
 
-    print(syntenyA)
+    # print(syntenyA)
     if out_name == "A":
         genome1, g1_list = correlate_blocks(syntenyA)
         genome2, g2_list = correlate_blocks(syntenyB)
+        for line in get_synteny_blocks(f"genA.txt", chrom_lens):
+            syntenyA.append([line[0], line[1], line[2], line[3]])
+        for line in get_synteny_blocks("genB.txt", other_len):
+            syntenyB.append([line[0], line[1], line[2], line[3]])
     elif out_name == "B":
         genome1, g1_list = correlate_blocks(syntenyB)
         genome2, g2_list = correlate_blocks(syntenyA)
-
+        for line in get_synteny_blocks(f"genB.txt", chrom_lens):
+            syntenyA.append([line[0], line[1], line[2], line[3]])
+        for line in get_synteny_blocks("genA.txt", other_len):
+            syntenyB.append([line[0], line[1], line[2], line[3]])
     connected_borders = get_connected_borders(connected_border_file)
     # The code above makes sure that the correct file is chosen from which to extract the block information.
 
@@ -458,11 +473,18 @@ if __name__ == "__main__":
     # for num, block in my_borders:
     #     print([num, block])
     # Save output to files in the form "blocks_{FASTA_NAME}.txt"
-    with open(f"blocks_{sys.argv[1].split('.')[0]}.txt", "w") as final_file:
-        final_file.write(f"Original order of blocks in genome {sys.argv[4]}\n")
+    with open(f"blocks_{sys.argv[4].split('.')[0]}.txt", "w") as final_file:
+        final_file.write(f"Original order of blocks in genome {sys.argv[1]}\n")
+        # Write the original order of the blocks in the OTHER genome to the file.
         for x in genome2:
             final_file.write(f"{x.num} - {x.block_info}\n")
         final_file.write(f"\n")
-        final_file.write(f"Order of blocks in genome {sys.argv[1]}\n")
+        final_file.write(f"Order of blocks in genome {sys.argv[4]}\n")
         for num, block in my_borders:
             final_file.write(f"{num} - {block}\n")
+
+# TODO: script to manipulate chromosome names. See what the copilot can do
+# Go through the logic. I need to write about in the paper anyway. What reads are being mapped to what genome to
+# create the files and stuff. There is also a mistake with the lengths of the 5th chromosome... it wasn't there
+# before I changed stuff today.
+# Will make a good figure too, can create a huge flow diagram showing the different data

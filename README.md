@@ -1,14 +1,26 @@
 # ReciMap
 
-Recimap (a reciprocal mapping tool) was developed as a bioinformatics command-line tool/pipeline to find rearrangements
+ReciMap (a reciprocal mapping tool) was developed as a bioinformatics command-line tool/pipeline to find rearrangements
 breakpoints between two closely related genomes. It uses Burrows-Wheeler read mapping (with Bowtie2) to map synthetic 
 reads from one genome onto the other, and vice versa (reciprocally). The reads are created from the genomes and 
 partially mapping reads with high MAPQ scores are used to identify the borders of rearrangement events
-(breakpoints). 
+(breakpoints). The functionality/scope of the pipeline was extended to include the ability to identify synteny blocks 
+between the two genomes.
 
-Recimap was created by Casper Schutte as part of an M.Sc. project at the University of Stellenbosch, South Africa. 
+ReciMap was created by Casper Schutte as part of an M.Sc. project at the University of Stellenbosch, South Africa. 
 
 ## Usage:
+Important Note: In its current state, the pipeline only works when ALL of the chromosome names in BOTH FASTA files are 
+in the following format: (This is temporary, and a fix is in the works)
+```
+>Chr1
+(sequence for Chr1)
+>Chr2
+(sequence for Chr2)
+>Chr3
+(sequence for Chr3)
+etc
+```
 Install the required libraries and software tools from the (ENVIRONMENT FILE). 
 The two genomes need to be in FASTA format and the files need to be in the same directory as all the scripts. 
 Running the pipeline is as simple as running the following command in the terminal:
@@ -52,28 +64,29 @@ The format is as follows
 n - (chromosome name, start position of block, end position of block)
 ```
 Where "n" is the numerical label of the block, representing the original order of the blocks in the other genome.
-For example:
+For example, the contents of the file "blocks_rearranged_genome.txt":
 ```
 Original order of blocks in genome reference_genome.fa
-1 - ('Chr2', 1, 210)
-2 - ('Chr2', 211, 14140)
-3 - ('Chr2', 14141, 14490)
+1 - ('Chr1', 1, 15400)
+2 - ('Chr2', 1, 210)
+3 - ('Chr2', 211, 14140)
 4 - ('Chr3', 1, 700)
 5 - ('Chr3', 701, 1401)
 6 - ('Chr3', 1401, 5880)
 7 - ('Chr3', 5882, 6790)
 8 - ('Chr3', 6791, 8540)
 9 - ('Chr4', 1, 487)
-10 - ('Chr4', 493, 5600)
+10 - ('Chr4', 493, 4480)
 11 - ('Chr5', 1, 2240)
 12 - ('Chr5', 2241, 3361)
-13 - ('Chr5', 3361, 5172)
+13 - ('Chr5', 3361, 6292)
 
 Order of blocks in genome rearranged_genome.fa
+n - ('Chr1', 1, 700)
 n - ('Chr1', 701, 1400)
 n - ('Chr1', 1401, 14700)
 n - ('Chr2', 1, 210)
-2 - ('Chr2', 211, 14490)
+3 - ('Chr2', 211, 14490)
 5 - ('Chr3', 1, 700)
 4 - ('Chr3', 701, 1401)
 6 - ('Chr3', 1401, 5880)
@@ -89,8 +102,15 @@ The numerical labels of the blocks represent the order of the blocks in the OTHE
 the block labelled "12" is located between blocks 9 and 10. This is due to a rearrangement event as in the reference 
 genome it was the 12th block, located between blocks 11 and 13. 
 
+The other file ("blocks_reference_genome.txt") will be in the same format, but with the order of the blocks in the 
+rearranged genome shown as the "correct" (numerical) order, and the order in which those synteny blocks appear in the 
+reference genome.
+
 The blocks labelled "n" are blocks whose synteny could not be established. This is often due to duplication events, 
-which do not leave a clear border.
+which do not leave a clear border. Block ('Chr2', 1, 210) in this example could not be identified as being syntenous 
+between the genomes, this is due to the method used to identify synteny blocks and the fact that the borders used to 
+identify the presence of a border resulted from an inversion of this block (see the "Method" section in my thesis for more
+information on the inner workings of this pipeline).
 
 For more information on the rearrangement border, an 
 output file called "output.txt" will be left by the pipeline, giving more detail on each identified rearrangement border

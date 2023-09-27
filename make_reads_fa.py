@@ -5,6 +5,11 @@ read_file_name = sys.argv[2]
 
 
 def get_chrom_names(genome):
+    """
+    Takes a FASTA file and returns the names of the chromosomes
+    :param genome:
+    :return: list of chromosome names
+    """
     chrom_list = []
     with open(genome, "r") as a:
         for line in a.readlines():
@@ -17,9 +22,9 @@ def get_chrom_names(genome):
 
 def get_seq(genome):
     """
-    Takes a FASTA file and returns the full sequence sans the title and newline characters
-    input: FASTA (.fna) file
-    output: string
+    Takes a FASTA file and returns the sequences of the individual chromosomes
+    :param genome:
+    :return: list of chromosome sequences
     """
 
     with open(genome, "r") as a:
@@ -42,9 +47,9 @@ def get_seq(genome):
 
 def get_reads(seq_file):
     """
-    Creates reads according to the parameters in the argument
-    input: The full sequence as a string
-    output: list of reads
+    Takes a sequence and returns a list of reads
+    :param seq_file:
+    :return: list of reads
     """
     read_len = 200
     reads = []
@@ -58,9 +63,10 @@ def get_reads(seq_file):
 
 def reads_to_file(reads, pos):
     """
-    Writes a fastA file with the list of reads
-    input: a list of reads
-    output: a fastA file containing the reads and their number
+    Takes a list of reads and writes them to a file
+    :param reads:
+    :param pos:
+    :return: None
     """
     my_file = open(read_file_name, "w")
     # reads = sorted(reads)
@@ -84,8 +90,10 @@ if __name__ == "__main__":
     Eg. rCh4r311
     NOTE that this script erases any instances of the letter "r" in the chromosome name, this is done because I haven't 
     found a better character to split by. 
-    The lines that print are for debugging. 
+    The lines that print are for debugging.
     """
+    # TODO: find a better way to split the chromosome names
+
     chroms = get_chrom_names(filepath)
     # print(f"chroms: {chroms}")
     h = get_seq(filepath)
