@@ -138,7 +138,7 @@ def get_synteny_blocks(border_file, lens):
                                 clean_list.append([current[0][0], min(pos_range), max(pos_range), current[0][2]])
                             bwr[b2] = clean_list
 
-        print("Blocks:")
+        # print("Blocks:")
         for x in range(len(t)):
             # This iterates over the list where each element is a list comprised of the chromosome block and any
             # border blocks.
@@ -366,7 +366,7 @@ def assign_numbers_to_n_blocks(my_borders, connected_borders):
 
             if right is not None and left is not None:
                 if right == "n" or left == "n":
-                    print(f"{left, right}")
+                    # print(f"{left, right}")
                     if left == "n" and right != "n":
                         left = right - 1
                         my_borders[i][0] = left
@@ -385,13 +385,18 @@ if __name__ == "__main__":
     syntenyA = []
     syntenyB = []
 
-    for line in get_synteny_blocks(f"genA.txt", chrom_lens):
-        syntenyA.append([line[0], line[1], line[2], line[3]])
-    for line in get_synteny_blocks("genB.txt", other_len):
-        syntenyB.append([line[0], line[1], line[2], line[3]])
+
+    # for line in get_synteny_blocks(f"genA.txt", chrom_lens):
+    #     syntenyA.append([line[0], line[1], line[2], line[3]])
+    # for line in get_synteny_blocks(f"genB.txt", other_len):
+    #     syntenyB.append([line[0], line[1], line[2], line[3]])
 
     # print(syntenyA)
     if out_name == "A":
+        for line in get_synteny_blocks(f"genA.txt", chrom_lens):
+            syntenyA.append([line[0], line[1], line[2], line[3]])
+        for line in get_synteny_blocks(f"genB.txt", other_len):
+            syntenyB.append([line[0], line[1], line[2], line[3]])
         genome1, g1_list = correlate_blocks(syntenyA)
         genome2, g2_list = correlate_blocks(syntenyB)
         for line in get_synteny_blocks(f"genA.txt", chrom_lens):
@@ -399,6 +404,10 @@ if __name__ == "__main__":
         for line in get_synteny_blocks("genB.txt", other_len):
             syntenyB.append([line[0], line[1], line[2], line[3]])
     elif out_name == "B":
+        for line in get_synteny_blocks(f"genA.txt", other_len):
+            syntenyA.append([line[0], line[1], line[2], line[3]])
+        for line in get_synteny_blocks(f"genB.txt", chrom_lens):
+            syntenyB.append([line[0], line[1], line[2], line[3]])
         genome1, g1_list = correlate_blocks(syntenyB)
         genome2, g2_list = correlate_blocks(syntenyA)
         for line in get_synteny_blocks(f"genB.txt", chrom_lens):
@@ -451,6 +460,7 @@ if __name__ == "__main__":
                                     n2, b1
                                 ))
                             done.append(b1)
+    print("__________________________________________")
     my_borders = []
     position = 1
     for block_info in g1_list:
@@ -467,6 +477,7 @@ if __name__ == "__main__":
         if not found:
             position = block_info[2]
             if ["n", block_info] not in my_borders:
+                print(("n", block_info))
                 my_borders.append(["n", block_info])
 
     assign_numbers_to_n_blocks(my_borders, connected_borders)
@@ -483,7 +494,6 @@ if __name__ == "__main__":
         for num, block in my_borders:
             final_file.write(f"{num} - {block}\n")
 
-# TODO: script to manipulate chromosome names. See what the copilot can do
 # Go through the logic. I need to write about in the paper anyway. What reads are being mapped to what genome to
 # create the files and stuff. There is also a mistake with the lengths of the 5th chromosome... it wasn't there
 # before I changed stuff today.
