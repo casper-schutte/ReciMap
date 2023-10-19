@@ -417,6 +417,10 @@ if __name__ == "__main__":
     connected_borders = get_connected_borders(connected_border_file)
     # The code above makes sure that the correct file is chosen from which to extract the block information.
 
+    print(f"__________________________________________")
+    print(f"Order in {sys.argv[4]}")
+
+
     g1_ordered = []
     g2_ordered = []
     done = []
@@ -460,7 +464,8 @@ if __name__ == "__main__":
                                     n2, b1
                                 ))
                             done.append(b1)
-    print("__________________________________________")
+
+    # print(f"{sys.argv[1]}")
     my_borders = []
     position = 1
     for block_info in g1_list:
@@ -480,15 +485,21 @@ if __name__ == "__main__":
                 print(("n", block_info))
                 my_borders.append(["n", block_info])
 
+    # print(f"__________________________________________")
+    # print(f"Order in {sys.argv[4]}")
+
     assign_numbers_to_n_blocks(my_borders, connected_borders)
     # for num, block in my_borders:
     #     print([num, block])
+    print("__________________________________________")
+    print(f"Order in {sys.argv[1]}")
     # Save output to files in the form "blocks_{FASTA_NAME}.txt"
     with open(f"blocks_{sys.argv[4].split('.')[0]}.txt", "w") as final_file:
         final_file.write(f"Original order of blocks in genome {sys.argv[1]}\n")
         # Write the original order of the blocks in the OTHER genome to the file.
         for x in genome2:
             final_file.write(f"{x.num} - {x.block_info}\n")
+            print(f"{x.num} - {x.block_info}")
         final_file.write(f"\n")
         final_file.write(f"Order of blocks in genome {sys.argv[4]}\n")
         for num, block in my_borders:
