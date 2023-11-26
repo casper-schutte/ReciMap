@@ -87,6 +87,7 @@ python3 get_synteny_blocks.py "$genomeA" B mAB.txt "$genomeB"
 echo
 python3 get_synteny_blocks.py "$genomeB" A mBA.txt "$genomeA"
 
+# Clean up ugly temp files
 rm mAB.txt mBA.txt sAB.txt sBA.txt
 
 

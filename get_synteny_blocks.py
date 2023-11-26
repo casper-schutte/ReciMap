@@ -32,11 +32,13 @@ def get_chrom_info(filename):
 
         if current_chrom:
             chromosome_lengths[current_chrom] = current_seq_len
+    print(f"{filename}: {chromosome_lengths}")
     return chromosome_lengths
 
 
 chrom_lens = get_chrom_info(fasta_name)
 other_len = get_chrom_info(other_genome)
+
 
 # Define a function to find synteny blocks given the list of borders
 def get_synteny_blocks(border_file, lens):
@@ -148,6 +150,7 @@ def get_synteny_blocks(border_file, lens):
                 # If the list for a specific chromosome has length of 1, it means no borders are present and the
                 # whole chromosome gets added as a block to the list of real blocks.
             else:
+                # print(f"{t}\n")
                 # Here we iterate over the elements in the sub-lists. So this loop is repeated for each chromosome
                 # list.
                 curr_pos = 0
@@ -189,7 +192,6 @@ def get_synteny_blocks(border_file, lens):
                 rb.append(
                     (
                         t[x][y][0], curr_pos, lens.get(t[x][y][0]), bwr.get(t[x][y + 1])
-                        # Suspect this is where a mistake is creeping in wrt to chromosome lengths.
                     )
                 )
 
@@ -242,8 +244,11 @@ def get_read_info(file_with_reads):
 
 class Block:
     """
-    This class is not used, but may provide future functionality.
+    This class is used to store the information for each block in the genome. It is used to create the dictionary
+    that contains the information for each block in the genome. The format of the dictionary is:
+    {block info: [read info, read info, ...]}
     """
+
     def __init__(self, num, block_info, read_info, block_range):
         self.num = num
         self.block_info = block_info
@@ -385,7 +390,6 @@ if __name__ == "__main__":
     syntenyA = []
     syntenyB = []
 
-
     # for line in get_synteny_blocks(f"genA.txt", chrom_lens):
     #     syntenyA.append([line[0], line[1], line[2], line[3]])
     # for line in get_synteny_blocks(f"genB.txt", other_len):
@@ -395,31 +399,28 @@ if __name__ == "__main__":
     if out_name == "A":
         for line in get_synteny_blocks(f"genA.txt", chrom_lens):
             syntenyA.append([line[0], line[1], line[2], line[3]])
+
         for line in get_synteny_blocks(f"genB.txt", other_len):
             syntenyB.append([line[0], line[1], line[2], line[3]])
+
         genome1, g1_list = correlate_blocks(syntenyA)
         genome2, g2_list = correlate_blocks(syntenyB)
-        for line in get_synteny_blocks(f"genA.txt", chrom_lens):
-            syntenyA.append([line[0], line[1], line[2], line[3]])
-        for line in get_synteny_blocks("genB.txt", other_len):
-            syntenyB.append([line[0], line[1], line[2], line[3]])
+
     elif out_name == "B":
+        for line in get_synteny_blocks(f"genB.txt", chrom_lens):
+            syntenyB.append([line[0], line[1], line[2], line[3]])
+
         for line in get_synteny_blocks(f"genA.txt", other_len):
             syntenyA.append([line[0], line[1], line[2], line[3]])
-        for line in get_synteny_blocks(f"genB.txt", chrom_lens):
-            syntenyB.append([line[0], line[1], line[2], line[3]])
+
         genome1, g1_list = correlate_blocks(syntenyB)
         genome2, g2_list = correlate_blocks(syntenyA)
-        for line in get_synteny_blocks(f"genB.txt", chrom_lens):
-            syntenyA.append([line[0], line[1], line[2], line[3]])
-        for line in get_synteny_blocks("genA.txt", other_len):
-            syntenyB.append([line[0], line[1], line[2], line[3]])
+
     connected_borders = get_connected_borders(connected_border_file)
     # The code above makes sure that the correct file is chosen from which to extract the block information.
 
-    print(f"__________________________________________")
-    print(f"Order in {sys.argv[4]}")
-
+    print("__________________________________________")
+    print(f"Order in {sys.argv[1]}")
 
     g1_ordered = []
     g2_ordered = []
@@ -465,7 +466,6 @@ if __name__ == "__main__":
                                 ))
                             done.append(b1)
 
-    # print(f"{sys.argv[1]}")
     my_borders = []
     position = 1
     for block_info in g1_list:
@@ -473,7 +473,7 @@ if __name__ == "__main__":
         for number, info in g2_ordered:
             if info == block_info:
                 found = True
-                print((number, info))
+                # print((number, info))
                 position = info[2]
                 if [number, info] not in my_borders:
                     my_borders.append([number, info])
@@ -482,30 +482,25 @@ if __name__ == "__main__":
         if not found:
             position = block_info[2]
             if ["n", block_info] not in my_borders:
-                print(("n", block_info))
+                # print(("n", block_info))
                 my_borders.append(["n", block_info])
 
-    # print(f"__________________________________________")
-    # print(f"Order in {sys.argv[4]}")
-
     assign_numbers_to_n_blocks(my_borders, connected_borders)
-    # for num, block in my_borders:
-    #     print([num, block])
-    print("__________________________________________")
-    print(f"Order in {sys.argv[1]}")
+    for num, block in my_borders:
+        print([num, block])
+    print(f"__________________________________________")
+    print(f"Order in {sys.argv[4]}")
     # Save output to files in the form "blocks_{FASTA_NAME}.txt"
-    with open(f"blocks_{sys.argv[4].split('.')[0]}.txt", "w") as final_file:
-        final_file.write(f"Original order of blocks in genome {sys.argv[1]}\n")
+    with open(f"blocks_{sys.argv[1].split('.')[0]}.txt", "w") as final_file:
+        final_file.write(f"Original order of blocks in genome {sys.argv[4]}\n")
+
         # Write the original order of the blocks in the OTHER genome to the file.
         for x in genome2:
             final_file.write(f"{x.num} - {x.block_info}\n")
             print(f"{x.num} - {x.block_info}")
+
         final_file.write(f"\n")
-        final_file.write(f"Order of blocks in genome {sys.argv[4]}\n")
+        final_file.write(f"Order of blocks in genome {sys.argv[1]}\n")
         for num, block in my_borders:
             final_file.write(f"{num} - {block}\n")
 
-# Go through the logic. I need to write about in the paper anyway. What reads are being mapped to what genome to
-# create the files and stuff. There is also a mistake with the lengths of the 5th chromosome... it wasn't there
-# before I changed stuff today.
-# Will make a good figure too, can create a huge flow diagram showing the different data
