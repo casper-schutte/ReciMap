@@ -10,10 +10,16 @@ between the two genomes.
 ReciMap was created by Casper Schutte as part of an M.Sc. project at the University of Stellenbosch, South Africa. 
 
 ## Usage:
+This pipeline only has 2 dependencies: samtools and Bowtie2. It is recommended that you use Conda or a similar 
+environment manager. The dependencies can be installed by running:
+```
+conda install samtools
+conda install bowtie2
+```
 This pipeline is best suited for use between very closely related genomes and was not designed to handle complex
 (overlapping) rearrangement events.
 Important Note: In its current state, the pipeline only works when ALL of the chromosome names in BOTH FASTA files are 
-in the following format: (This is temporary, and a fix is in the works)
+in the following format:
 ```
 >Chr1
 (sequence for Chr1)
