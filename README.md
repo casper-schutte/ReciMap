@@ -29,7 +29,7 @@ in the following format:
 (sequence for Chr3)
 etc
 ```
-Install the required libraries and software tools from the (ENVIRONMENT FILE). 
+Install the required libraries and software tools (samtools and Bowtie2). 
 The two genomes need to be in FASTA format and the files need to be in the same directory as all the scripts. 
 Running the pipeline is as simple as running the following command in the terminal:
 
